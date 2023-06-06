@@ -4,6 +4,8 @@
 import requests
 import json
 import creds
+import datetime
+
 from requests.auth import HTTPBasicAuth
 headers = {'Content-Type': 'application/json',
         'accept': 'application/json',
@@ -12,14 +14,19 @@ headers = {'Content-Type': 'application/json',
 
 url = creds.host
 
+
 response = requests.get(url = url+'/Users', headers=headers)
 if response.status_code == 200:
     resp_data = response.json()
     if resp_data:
         for element in resp_data:
-            print(element['LastActivityDate'])
+            last_activity = (element['LastActivityDate'])
             print(element['Name'])
             print(element['Id'])
+
+            if last_activity > datetime.now - 90
+                #endpoint to end session
+                get sessions
     else:
         print("Empty list received from the API.")
 else: 
