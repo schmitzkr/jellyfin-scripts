@@ -43,3 +43,16 @@ def get_active_sessions():
     else:
         print("Request failed with status code:", response.status_code)
 print(get_active_sessions())
+
+def get_current_time():
+    current_time = datetime.datetime.now().isoformat()
+    return current_time
+
+current_time = get_current_time()
+print(current_time)
+
+
+def logout_idlers():
+    """compare the last active time with the current time, if it has been more than 30m, logout this user"""
+    
+
