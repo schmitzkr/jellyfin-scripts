@@ -1,7 +1,9 @@
 """end idle sessions on jellyfin instance"""
 #!/usr/bin/env python
 
-import datetime
+from datetime import datetime, timezone
+from dateutil import parser
+from datetime import timedelta
 import requests
 import creds
 
@@ -44,18 +46,43 @@ print(get_last_activity())
 #         print("Request failed with status code:", response.status_code)
 # print(get_active_sessions())
 
+# def compare_time(users_list):
+#     """compare active time with current time"""
+    
+#     current_time = datetime.datetime.now().isoformat()+'Z'
+#     active_users = []
+#     print(current_time)
+#     for user_tuple in users_list:
+#         user_id, active_time = user_tuple
+#         active_time = datetime.datetime.fromisoformat(active_time)
+#         time_difference = current_time - active_time
+#     if time_difference > timedelta(minutes=30):
+#         active_users.append(user_id)
+#     return active_users
+
 def compare_time(users_list):
     """compare active time with current time"""
     
-    current_time = datetime.datetime.now().isoformat()
+    current_time = datetime.datetime.utcnow()
     active_users = []
+    print(current_time)
     
+
+def compare_time(users_list):
+    """compare active time with current time"""
+    
+    current_time = datetime.now(timezone.utc)
+    active_users = []
+       
     for user_tuple in users_list:
         user_id, active_time = user_tuple
-        active_time = datetime.date.fromisoformat(active_time)
+        active_time = parser.isoparse(active_time)
         time_difference = current_time - active_time
-    if time_difference > timedelta(minutes=30):
-        active_users.append(user_id)
+        
+        if time_difference > timedelta(minutes=30):
+            active_users.append(user_id)
+    
+    print(active_users)
     return active_users
 
 def logout_idlers():
