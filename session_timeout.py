@@ -7,22 +7,24 @@ from dateutil import parser
 import requests
 import creds
 
-headers = {'Content-Type': 'application/json',
-        'accept': 'application/json',
-        'Authorization': 'MediaBrowser Token="' + creds.TOKEN + '"'
-        }
-
+headers = {
+    'Content-Type': 'application/json',
+    'accept': 'application/json',
+    'Authorization': 'MediaBrowser Token="' + creds.TOKEN + '"'
+}
+print (headers)
 URL = creds.HOST
 
 def get_last_activity():
-    """make api call to get and return userid and last_activity"""
+    """make API call to get and return userid and last_activity"""
     last_activity = []
-    response = requests.get(url = URL+'/Users', headers=headers, timeout=5)
+    response = requests.get(url=URL + '/Sessions', headers=headers, timeout=5)
+
     if response.status_code == 200:
         resp_data = response.json()
         if resp_data:
             for element in resp_data:
-                last_activity.append((element['Id'], element['LastActivityDate']))
+                last_activity.append((element['Id'], element['UserId'], element['LastActivityDate']))
             return last_activity
         else:
             print("Empty list received from the API.")
@@ -34,18 +36,30 @@ def compare_time(users_list):
     current_time = datetime.now(timezone.utc)
     active_users = []
     for user_tuple in users_list:
-        user_id, active_time = user_tuple
+        session_id, user_id, active_time = user_tuple
         active_time = parser.isoparse(active_time)
         time_difference = current_time - active_time
-        if time_difference > timedelta(minutes=30):
-            active_users.append(user_id)
+        if time_difference > timedelta(minutes=1):
+            active_users.append((session_id, user_id))
     return active_users
 
 def logout_idlers():
     """logout users who haven't done something for 30m"""
     last_activity_tuples = get_last_activity()
-    for tuple_pair in last_activity_tuples:
-        idlers = compare_time(last_activity_tuples)
-    print(idlers)
-    #need to add something here to actually logout idlers, there doesnt seem to be an api endpoint.
+    idlers = compare_time(last_activity_tuples)
+
+    for idler in idlers:
+        session_id, user_id = idler
+        response = requests.delete(url=URL + '/Sessions/' + session_id + '/User/' + user_id, headers=headers, timeout=5)
+        test_concat = URL + '/Sessions/' + session_id + '/User/' + user_id
+        print (session_id)
+        print (user_id)
+        print(test_concat)
+
+        if response.status_code == 204:
+            print("Session with ID", session_id, "has been deleted successfully.")
+        else:
+            print("Failed to delete session with ID:", session_id)
+            print("Request failed with status code:", response.status_code)
+
 logout_idlers()
